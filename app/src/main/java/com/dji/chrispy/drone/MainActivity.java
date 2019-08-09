@@ -35,9 +35,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
+import dji.common.remotecontroller.HardwareState;
 import dji.log.DJILog;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 /** Main activity that displays three choices to user */
@@ -79,6 +81,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Popu
         public void onComponentChange(BaseProduct.ComponentKey key,
                                       BaseComponent oldComponent,
                                       BaseComponent newComponent) {
+            if (key == BaseProduct.ComponentKey.REMOTE_CONTROLLER) {
+                ((RemoteController)newComponent).setHardwareStateCallback(new HardwareState.HardwareStateCallback() {
+                    @Override
+                    public void onUpdate(@NonNull HardwareState hardwareState) {
+                        if (hardwareState.getC1Button().isClicked() || hardwareState.getC2Button().isClicked()) {
+                            DJISDKManager.getInstance().getProduct().getGimbal().reset(null);
+                        }
+                    }
+                });
+
+            }
+
 //            Toast.makeText(getApplicationContext(),
 //                           key.toString() + " changed",
 //                           Toast.LENGTH_LONG).show();
